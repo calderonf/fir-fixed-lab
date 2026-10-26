@@ -12,7 +12,7 @@ laboratorio.
 
 ## Instalación
 
-1. Abra la pestaña [Releases](../../releases) del repositorio oficial.
+1. Abra la pestaña [Releases](https://github.com/calderonf/fir-fixed-lab/releases) del repositorio oficial.
 2. Descargue `FIR-Fixed-Lab-Setup-<versión>-Windows-x64.exe` de la versión más
    reciente.
 3. Compruebe que la descarga procede de ese repositorio y ejecute el instalador.

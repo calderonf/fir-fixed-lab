@@ -27,6 +27,12 @@ class WindowsLauncherTests(unittest.TestCase):
         self.assertEqual(command[-2:], ["--serve", "45678"])
         self.assertTrue(command[-3].endswith("fir_fixed_lab_launcher.py"))
 
+    def test_streamlit_arguments_force_production_mode_for_the_bundle(self) -> None:
+        arguments = launcher._streamlit_arguments(Path("firlab/app.py"), 45678)
+        self.assertIn("--global.developmentMode=false", arguments)
+        self.assertIn("--server.address=127.0.0.1", arguments)
+        self.assertEqual(arguments[arguments.index("--server.port") + 1], "45678")
+
 
 if __name__ == "__main__":
     unittest.main()

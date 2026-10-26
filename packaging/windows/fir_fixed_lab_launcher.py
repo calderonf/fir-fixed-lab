@@ -8,6 +8,7 @@ seriales pertenecen al computador del estudiante.
 from __future__ import annotations
 
 import atexit
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -41,6 +42,22 @@ def _server_command(port: int) -> list[str]:
     return [sys.executable, str(Path(__file__).resolve()), "--serve", str(port)]
 
 
+def _streamlit_arguments(app_path: Path, port: int) -> list[str]:
+    """Argumentos de Streamlit para un servidor local de producción."""
+    return [
+        "streamlit",
+        "run",
+        str(app_path),
+        "--global.developmentMode=false",
+        "--server.address=127.0.0.1",
+        "--server.port",
+        str(port),
+        "--server.headless=true",
+        "--server.runOnSave=false",
+        "--browser.gatherUsageStats=false",
+    ]
+
+
 def _run_streamlit_server(port: int) -> None:
     """Ejecuta Streamlit en el hijo; esta llamada no retorna hasta cerrar la app."""
     project_root = _resource_path("")
@@ -50,19 +67,14 @@ def _run_streamlit_server(port: int) -> None:
     if str(project_root) not in sys.path:
         sys.path.insert(0, str(project_root))
 
+    # PyInstaller no carga Streamlit desde una ruta normal de site-packages;
+    # sin esta configuración Streamlit se considera en desarrollo y bloquea
+    # --server.port. Se fija antes de importar su CLI para el proceso hijo.
+    os.environ["STREAMLIT_GLOBAL_DEVELOPMENT_MODE"] = "false"
+    os.environ["STREAMLIT_ENV"] = "production"
     from streamlit.web import cli as streamlit_cli
 
-    sys.argv = [
-        "streamlit",
-        "run",
-        str(app_path),
-        "--server.address=127.0.0.1",
-        "--server.port",
-        str(port),
-        "--server.headless=true",
-        "--server.runOnSave=false",
-        "--browser.gatherUsageStats=false",
-    ]
+    sys.argv = _streamlit_arguments(app_path, port)
     streamlit_cli.main()
 
 

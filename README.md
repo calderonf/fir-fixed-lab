@@ -17,7 +17,7 @@ no sólo para obtener coeficientes.
 | Ejecutar, probar o publicar una versión desde el código fuente | [Guía de desarrollo y lanzamientos](docs/DESARROLLO.md) |
 | Estudiar formatos `W`, `F/QF`, `QI`, signo y desbordamiento | [Presentación de punto fijo](output/pdf/formatos_punto_fijo.pdf) |
 
-La descarga oficial se publicará en la pestaña [Releases](../../releases) como
+La descarga oficial se publicará en la pestaña [Releases](https://github.com/calderonf/fir-fixed-lab/releases) como
 `FIR-Fixed-Lab-Setup-<versión>-Windows-x64.exe`. Descargue el instalador desde
 allí, no desde copias recibidas por mensajería.
 
