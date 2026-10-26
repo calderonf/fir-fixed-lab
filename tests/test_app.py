@@ -23,6 +23,16 @@ class AppTests(unittest.TestCase):
             ],
         )
 
+    def test_sidebar_exposes_pyfda_fir_import_without_enabling_iir_design(self) -> None:
+        app = AppTest.from_file(str(APP_PATH)).run(timeout=30)
+
+        self.assertFalse(app.exception)
+        self.assertEqual(app.file_uploader(key="pyfda-json-upload").label, "Cargar FIR de pyfda (.json)")
+        self.assertIn(
+            "Filtro importado de pyfda",
+            app.segmented_control(key="design-mode").options,
+        )
+
     def test_custom_internal_precision_shows_explained_product_and_accumulator_bounds(self) -> None:
         app = AppTest.from_file(str(APP_PATH)).run(timeout=30)
         app.checkbox(key="customize-internal").set_value(True).run(timeout=30)

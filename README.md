@@ -4,7 +4,7 @@ Aplicación didáctica para diseñar, cuantizar, simular y llevar filtros FIR a
 hardware de bajo costo. Está diseñada para explicar qué representa cada entero,
 no sólo para obtener coeficientes.
 
-> La aplicación se distribuye para ejecutarse **localmente** en Windows. Así
+> La aplicación se distribuye para ejecutarse **localmente**. Así
 > conserva acceso al puerto USB/serial de Arduino, Raspberry Pi Pico y ESP32,
 > mientras el estudiante usa la interfaz en su navegador.
 
@@ -13,6 +13,8 @@ no sólo para obtener coeficientes.
 | Para… | Consulte… |
 | --- | --- |
 | Instalar y usar la aplicación en Windows | [Guía de instalación para Windows](docs/INSTALACION_WINDOWS.md) |
+| Instalar y usar la aplicación en Debian o Ubuntu | [Guía para Debian/Ubuntu](docs/INSTALACION_LINUX_DEBIAN_UBUNTU.md) |
+| Instalar y usar la aplicación en macOS | [Guía para macOS](docs/INSTALACION_MACOS.md) |
 | Conectar y validar una tarjeta | [Hardware, exportaciones y protocolo serial](docs/HARDWARE.md) |
 | Ejecutar, probar o publicar una versión desde el código fuente | [Guía de desarrollo y lanzamientos](docs/DESARROLLO.md) |
 | Estudiar formatos `W`, `F/QF`, `QI`, signo y desbordamiento | [Presentación de punto fijo](output/pdf/formatos_punto_fijo.pdf) |
@@ -25,6 +27,9 @@ allí, no desde copias recibidas por mensajería.
 
 - Diseño FIR pasobajo por ventanas: rectangular, Hann, Hamming, Blackman y
   Kaiser.
+- Importación de FIR diseñados en [pyfda-web](https://pyfda-web.borish127.com/)
+  desde JSON: conserva exactamente `b` y `Fs`; rechaza IIR al verificar
+  `filterFamily` y el denominador `a`.
 - Formatos de punto fijo explícitos: signo, longitud de palabra `W`, longitud
   fraccionaria `F`/`QF` y bits enteros `QI`.
 - Rango mínimo/máximo y LSB de entrada, coeficientes y salida.

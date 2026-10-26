@@ -28,7 +28,11 @@ from firlab.fir import (
     trace_fir_sample,
 )
 from firlab.fixed_point import FixedFormat, OverflowMode, RoundingMode
+from firlab.pyfda import PyfdaFir, PyfdaImportError, load_pyfda_fir
 from firlab.serial_protocol import SerialProtocolError, process_samples_sequentially
+
+
+PYFDA_IMPORTED_MODE = "Filtro importado de pyfda"
 
 
 def _two_notations(format_: FixedFormat) -> str:
@@ -261,6 +265,40 @@ _EXAMPLES: dict[str, dict[str, object]] = {
 def _load_example(name: str) -> None:
     """Carga un caso corto antes de que Streamlit vuelva a crear los widgets."""
     st.session_state.update(_EXAMPLES[name])
+
+
+def _load_uploaded_pyfda(uploaded_file) -> tuple[PyfdaFir | None, str | None]:
+    """Lee un archivo nuevo y prepara los widgets antes de que se rendericen.
+
+    El archivo permanece en el navegador durante la sesión de Streamlit. Se
+    vuelve a leer en cada rerun porque es pequeño; el hash evita sobrescribir
+    una modificación posterior del usuario cuando el mismo archivo sigue
+    seleccionado.
+    """
+    if uploaded_file is None:
+        if st.session_state.pop("pyfda-import-active", False):
+            st.session_state.pop("pyfda-import-digest", None)
+            if st.session_state.get("design-mode") == PYFDA_IMPORTED_MODE:
+                st.session_state["design-mode"] = "Pasobajo por ventana"
+        return None, None
+
+    content = uploaded_file.getvalue()
+    try:
+        imported = load_pyfda_fir(content)
+    except PyfdaImportError as error:
+        return None, str(error)
+
+    digest = hash(content)
+    if st.session_state.get("pyfda-import-digest") != digest:
+        st.session_state.update(
+            {
+                "pyfda-import-digest": digest,
+                "pyfda-import-active": True,
+                "design-mode": PYFDA_IMPORTED_MODE,
+                "sample-rate": imported.sample_rate,
+            }
+        )
+    return imported, None
 
 
 def _clamp_format_fraction(title: str, max_word_length: int) -> None:
@@ -533,15 +571,30 @@ def main() -> None:
                 "sin garantía. Consulta el texto completo de la "
                 "[licencia GPLv3](https://github.com/calderonf/fir-fixed-lab/blob/main/LICENSE)."
             )
+        uploaded_pyfda = st.file_uploader(
+            "Cargar FIR de pyfda (.json)",
+            type="json",
+            key="pyfda-json-upload",
+            help=(
+                "Importa únicamente un FIR exportado desde pyfda-web. Se toman `b` y `specs.fs`; "
+                "el archivo se rechaza si `filterFamily` no es FIR o si `a` no es exactamente `[1]`."
+            ),
+        )
+        imported_filter, import_error = _load_uploaded_pyfda(uploaded_pyfda)
+        if import_error:
+            st.error(import_error, title="No se pudo importar el filtro de pyfda")
         design_options = {} if "design-mode" in st.session_state else {"default": "Pasobajo por ventana"}
         design_mode = st.segmented_control(
             "Estructura del FIR",
-            ["Pasobajo por ventana", "Paso alto por ventana", "Media móvil"],
+            ["Pasobajo por ventana", "Paso alto por ventana", "Media móvil", PYFDA_IMPORTED_MODE],
             required=True,
             key="design-mode",
             width="stretch",
             **design_options,
         )
+        if design_mode == PYFDA_IMPORTED_MODE and imported_filter is None:
+            st.warning("Carga un JSON FIR válido de pyfda o selecciona otra estructura.")
+            st.stop()
         sample_rate_options = {} if "sample-rate" in st.session_state else {"value": 1000.0}
         sample_rate = st.number_input(
             "Frecuencia de muestreo [Hz]",
@@ -551,7 +604,18 @@ def main() -> None:
             **sample_rate_options,
         )
         _clamp_frequencies_for_sample_rate()
-        if design_mode == "Media móvil":
+        if design_mode == PYFDA_IMPORTED_MODE:
+            assert imported_filter is not None  # Protegido justo después del selector.
+            taps = imported_filter.taps
+            st.caption(
+                f"Importado de pyfda: **{imported_filter.response_type}**, método "
+                f"`{imported_filter.design_method}` ({imported_filter.method})."
+            )
+            st.caption(
+                f"Orden del FIR: {imported_filter.order}. Hay {taps} coeficientes y "
+                f"{imported_filter.order} retardos. Los taps se conservan exactamente como se exportaron."
+            )
+        elif design_mode == "Media móvil":
             moving_taps_options = {} if "moving-average-taps" in st.session_state else {"value": 31}
             taps = int(
                 st.number_input(
@@ -573,10 +637,11 @@ def main() -> None:
                 step=1,
                 key="windowed-taps",
             )
-        st.caption(
-            f"Orden del FIR: {taps - 1}. Hay {taps} coeficientes y {taps - 1} retardos. "
-            + ("Taps impares: FIR simétrico de tipo I." if taps % 2 else "Taps pares: FIR simétrico de tipo II.")
-        )
+        if design_mode != PYFDA_IMPORTED_MODE:
+            st.caption(
+                f"Orden del FIR: {taps - 1}. Hay {taps} coeficientes y {taps - 1} retardos. "
+                + ("Taps impares: FIR simétrico de tipo I." if taps % 2 else "Taps pares: FIR simétrico de tipo II.")
+            )
         if design_mode in ("Pasobajo por ventana", "Paso alto por ventana"):
             # También cubre valores restaurados desde una sesión anterior.
             cutoff_options = {} if "cutoff-hz" in st.session_state else {"value": min(100.0, sample_rate / 4)}
@@ -598,7 +663,10 @@ def main() -> None:
                 "y todos los taps son no negativos."
             )
 
-    if design_mode == "Media móvil":
+    if design_mode == PYFDA_IMPORTED_MODE:
+        assert imported_filter is not None
+        coefficients = imported_filter.coefficients
+    elif design_mode == "Media móvil":
         coefficients = np.full(taps, 1.0 / taps)
     else:
         try:
