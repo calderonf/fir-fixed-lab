@@ -83,6 +83,9 @@ git push origin v0.1.0
 
 Cuando finalice el workflow, la sección Releases contendrá el instalador
 `FIR-Fixed-Lab-Setup-0.1.0-Windows-x64.exe` y notas generadas por GitHub.
+Una etiqueta con guion, como `v0.1.0-rc.1`, se publica automáticamente como
+*pre-release*; úsela para validar el instalador antes de crear la etiqueta
+estable `v0.1.0`.
 
 ## Lista de verificación antes de etiquetar
 

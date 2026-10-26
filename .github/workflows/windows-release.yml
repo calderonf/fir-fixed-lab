@@ -57,4 +57,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create $env:GITHUB_REF_NAME release/FIR-Fixed-Lab-Setup-*-Windows-x64.exe --generate-notes --title "Laboratorio FIR de punto fijo $env:GITHUB_REF_NAME"
+          $installer = (Get-ChildItem "release/FIR-Fixed-Lab-Setup-*-Windows-x64.exe").FullName
+          $arguments = @(
+            "release", "create", $env:GITHUB_REF_NAME, $installer,
+            "--generate-notes", "--title", "Laboratorio FIR de punto fijo $env:GITHUB_REF_NAME"
+          )
+          if ($env:GITHUB_REF_NAME.Contains("-")) {
+            $arguments += "--prerelease"
+          }
+          & gh @arguments
