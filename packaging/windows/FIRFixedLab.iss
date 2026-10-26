@@ -17,7 +17,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\Laboratorio FIR de punto fijo
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=release
+OutputDir=..\..\release
 OutputBaseFilename=FIR-Fixed-Lab-Setup-{#MyAppVersion}-Windows-x64
 Compression=lzma2
 SolidCompression=yes
@@ -30,7 +30,7 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 
 [Files]
-Source: "dist\FIR Fixed Lab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\dist\FIR Fixed Lab\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

@@ -37,8 +37,11 @@ jobs:
       - name: Construir instalador
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          if ($version -eq "") { $version = "0.1.0-dev" }
+          if ("${{ github.ref }}" -like "refs/tags/v*") {
+            $version = "${{ github.ref_name }}" -replace '^v', ''
+          } else {
+            $version = "0.1.0-dev.${{ github.run_number }}"
+          }
           python packaging/windows/build_windows.py --version $version
 
       - name: Conservar instalador como artefacto
