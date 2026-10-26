@@ -1,0 +1,57 @@
+name: Construir instalador Windows
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias y PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install . pyinstaller
+
+      - name: Ejecutar pruebas
+        run: python -m unittest discover -s tests -v
+
+      - name: Instalar Inno Setup
+        run: choco install innosetup --no-progress --yes
+
+      - name: Construir instalador
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          if ($version -eq "") { $version = "0.1.0-dev" }
+          python packaging/windows/build_windows.py --version $version
+
+      - name: Conservar instalador como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: FIR-Fixed-Lab-Windows-x64
+          path: release/FIR-Fixed-Lab-Setup-*-Windows-x64.exe
+          if-no-files-found: error
+
+      - name: Publicar Release al crear una etiqueta
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME release/FIR-Fixed-Lab-Setup-*-Windows-x64.exe --generate-notes --title "Laboratorio FIR de punto fijo $env:GITHUB_REF_NAME"

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fir-fixed-lab"
+version = "0.1.0"
+description = "Laboratorio didáctico de filtros FIR cuantizados"
+requires-python = ">=3.10"
+dependencies = ["altair>=5", "numpy>=1.24", "pandas>=2", "pyserial>=3.5", "streamlit>=1.35"]
+
+[tool.setuptools]
+packages = ["firlab"]
+
+[tool.setuptools.package-data]
+firlab = ["FIRFixed.h"]
