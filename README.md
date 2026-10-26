@@ -91,7 +91,7 @@ exactitud antes que velocidad.
 Los tres archivos exportados deben quedar juntos en una carpeta de sketch:
 
 ```text
-MiFiltro/
+FIRFixedImpulse/
 ├── FIRFixedImpulse.ino
 ├── FIRFixed.h
 └── fir_config.h

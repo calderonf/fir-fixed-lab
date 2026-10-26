@@ -31,7 +31,7 @@ claridad didáctica sobre velocidad.
 Para cargar un sketch, los tres archivos deben permanecer en la misma carpeta:
 
 ```text
-MiFiltro/
+FIRFixedSerial/
 ├── FIRFixedSerial.ino
 ├── FIRFixed.h
 └── fir_config.h
